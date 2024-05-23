@@ -39,6 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
+        print(attrs)
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)

@@ -10,10 +10,12 @@ from .serializer import *
 from rest_framework.views import APIView
 from cws.models import StationSettings
 from rest_framework import generics,permissions
-from django.db.models import Max
 from django.db.models import F, Sum,Max
 from django.db.models import OuterRef, Subquery
- 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Value
+from django.db import connection
 
 
 @api_view(['POST'])
@@ -22,19 +24,23 @@ def process_transaction_data(request):
     print("this is a request: ", request.data)
     mutable_data = request.data.copy()
 
+    print("mutable_data")
     print(mutable_data)
 
     data = dict(mutable_data)
+    print("cherry grade")
+    print(data['cherry_grade'][1])
+    grade=data['cherry_grade']
 
     try:
         cws_code = data['cws_code']
-        cherry_grade = data['cherry_grade'][1] if len(data['cherry_grade']) > 1 else None
+        cherry_grade = data['cherry_grade'] if len(data['cherry_grade']) > 1 else None
+
 
         if cherry_grade is None:
             raise ValueError("Cherry grade should be at least 2 characters long.")
 
-        # Fetch StationSettings based on cws and grade
-        station_settings = StationSettings.objects.get(cws__cws_code=cws_code, grade=cherry_grade)
+        station_settings = StationSettings.objects.get(cws__cws_code=cws_code, grade=data['cherry_grade'][1])
         print(station_settings)
         price = station_settings.price_per_kg
         acceptable_transport = station_settings.transport_limit
@@ -355,71 +361,6 @@ class StockInventoryUpdateAPIView(APIView):
 
 
 
-
-# class BatchReportAPIView(generics.ListAPIView):
-#     serializer_class = BatchReportSerializer
-
-#     def get_queryset(self):
-#         transactions = Transactions.objects.values(
-#             'season', 'cws_name', 'batch_no', 'cherry_grade'
-#         )
-
-#         receive_harvest = ReceiveHarvest.objects.values(
-#             'batch_no', 'received_cherry_kg', 'status'
-#         )
-
-#         inventory = Inventory.objects.values(
-#             'process_name', 'process_type__grade_name', 'schedule_date', 'completed_date'
-#         )
-
-#         stock_inventory_outputs = StockInventoryOutputs.objects.values(
-#             'process_name','process_type','out_turn'
-#         ).annotate(
-#             total_output_quantity=Sum('output_quantity'),
-#             outturn=Max('out_turn')
-#         )
-
-#         queryset = transactions.annotate(
-#             received_cherry_kg=Subquery(
-#                 receive_harvest.filter(
-#                     batch_no=OuterRef('batch_no')
-#                 ).values('received_cherry_kg')[:1]
-#             ),
-#             status=Subquery(
-#                 receive_harvest.filter(
-#                     batch_no=OuterRef('batch_no')
-#                 ).values('status')[:1]
-#             ),
-#             process_type=Subquery(
-#                 inventory.filter(
-#                     process_name=OuterRef('batch_no')
-#                 ).values('process_type__grade_name')[:1]
-#             ),
-#             schedule_date=Subquery(
-#                 inventory.filter(
-#                     process_name=OuterRef('batch_no'),
-#                     schedule_date__isnull=False 
-#                 ).values('schedule_date')[:1]
-#             ),
-#             completed_date=Subquery(
-#                 inventory.filter(
-#                     process_name=OuterRef('batch_no')
-#                 ).values('completed_date')[:1]
-#             ),
-#             total_output_quantity=Subquery(
-#                 stock_inventory_outputs.filter(
-#                     process_name=OuterRef('batch_no')
-#                 ).values('total_output_quantity')[:1]
-#             ),
-#             out_turn=Subquery(
-#                 stock_inventory_outputs.filter(
-#                     process_name=OuterRef('batch_no')
-#                 ).values('outturn')[:1]
-#             )
-#         ).exclude(schedule_date__isnull=True)
-
-#         return queryset
-
 class BatchReportAPIView(generics.ListAPIView):
     serializer_class = BatchReportSerializer
     # print(request)
@@ -550,3 +491,115 @@ class AllBatchReportAPIView(generics.ListAPIView):
         ).exclude(schedule_date__isnull=True).order_by(F('completed_date').desc())
 
         return queryset
+
+
+@api_view(['POST'])
+# @parser_classes([MultiPartParser, FormParser, JSONParser])
+def process_daily_purchase_validation(request):
+    data = request.data
+
+    try:
+        # Creating a DailyPurchaseValidation instance
+        DailyPurchaseValidation.objects.create(
+            date=data.get('newdate'),
+            cherry_grade=data.get('cherryGrade'),
+            cherry_kg=data.get('cherryKg'),
+            amount=data.get('amount')
+        )
+
+        return Response({"message": "Daily purchase validated successfully"}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({"error": f"Error processing daily purchase validation: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class RetrieveDailyPurchase(generics.ListAPIView):
+    queryset=DailyPurchaseValidation.objects.all()
+    serializer_class=DailyPurchaseValidationSerializer
+
+def total_purchase_by_date_and_grade(request):
+    if request.method == 'GET':
+        transactions_data = Transactions.objects.all()
+        daily_purchase_data = DailyPurchaseValidation.objects.all()
+
+        # with connection.cursor() as cursor:
+        #     cursor.execute("""
+        #         SELECT t.purchase_date, t.cherry_grade,SUM(t.price*t.cherry_kg) AS total_amount, SUM(t.cherry_kg) AS total_kgs
+        #         FROM transactions t
+        #         INNER JOIN daily_purchase_validation dpv ON
+        #             CONVERT(t.purchase_date USING utf8mb4) = CONVERT(dpv.date USING utf8mb4) AND
+        #             CONVERT(t.cherry_grade USING utf8mb4) = CONVERT(dpv.cherry_grade USING utf8mb4)
+        #         GROUP BY t.purchase_date, t.cherry_grade;
+        #     """)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    t.purchase_date,
+                    t.cherry_grade,
+                    SUM(t.price * t.cherry_kg) AS total_amount,
+                    SUM(t.cherry_kg) AS total_kgs,
+                    dpv.cherry_kg as dpv_cherry_kgs,
+                    dpv.amount as dpv_amount
+                FROM
+                    transactions t
+                    INNER JOIN daily_purchase_validation dpv ON
+                        CONVERT(t.purchase_date USING utf8mb4) = CONVERT(dpv.date USING utf8mb4) AND
+                        CONVERT(t.cherry_grade USING utf8mb4) = CONVERT(dpv.cherry_grade USING utf8mb4)
+                GROUP BY
+                    t.purchase_date,
+                    t.cherry_grade
+            """)
+            data = cursor.fetchall()
+
+        # Convert the data to a list of dictionaries
+        response_data = []
+        for row in data:
+            response_data.append({
+                'purchase_date': row[0],
+                'cherry_grade': row[1],
+                'total_kgs': float(row[2]),
+                'total_amount': float(row[3]),
+                'dpv_cherry_kgs': float(row[4]),
+                'dpv_amount': float(row[5])
+            })
+
+        return JsonResponse(response_data, safe=False)
+    else:
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+def get_loan_data(request):
+    if request.method == 'GET':
+        transactions_data = Transactions.objects.all()
+        daily_purchase_data = DailyPurchaseValidation.objects.all()
+
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    f.farmer_code,
+                    f.farmer_name,
+                    COALESCE(SUM(t.cherry_kg), 0) AS total_cherry_kg,
+                    COALESCE(SUM((t.price + t.transport) * t.cherry_kg), 0) AS total_amount,
+                    COALESCE(SUM((t.price + t.transport) * t.cherry_kg), 0) * 0.4 AS loan_limit
+                FROM
+                    farmer_details f
+                LEFT JOIN
+                    transactions t ON f.farmer_code = t.farmer_code
+                GROUP BY
+                    f.farmer_code, f.farmer_name
+            """)
+            data = cursor.fetchall()
+
+        # Convert the data to a list of dictionaries
+        response_data = []
+        for row in data:
+            response_data.append({
+                'farmer_code': row[0],
+                'farmer_name': row[1],
+                'total_cherry_kg': float(row[2]),
+                'total_amount': float(row[3]),
+                'loan_limit': float(row[4])
+            })
+
+        return JsonResponse(response_data, safe=False)
+    else:
+        return JsonResponse({"error": "Method not allowed"}, status=405)

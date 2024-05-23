@@ -31,13 +31,15 @@ from django.contrib import admin
 # from django.urls import path, re_path
 from django.conf import settings
 from api.views import CustomTokenObtainPairView
-from django.urls import path,include
-
-from react.views import serve_react
+from django.urls import path,include,re_path
+from transactions.views import process_daily_purchase_validation,RetrieveDailyPurchase
+from .views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('/',include)
-    path('api/',include('api.urls'))
-    # re_path(r"^(?P<path>.*)$", serve_react, {"document_root": settings.REACT_APP_BUILD_PATH}),
+    path('api/',include('api.urls')),
+    path('api/daily-purchase-validation/', process_daily_purchase_validation, name='daily-purchase-validation'),
+    path('api/get-daily-purchase-validation/', RetrieveDailyPurchase.as_view(), name='get-daily-purchase-validation'),
+    re_path(r'^.*$', index),
 ]

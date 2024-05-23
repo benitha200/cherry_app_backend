@@ -14,7 +14,7 @@ class Transactions(models.Model):
     season = models.IntegerField()
     cherry_kg = models.IntegerField()
     has_card = models.IntegerField()
-    cherry_grade = models.TextField(max_length=50)
+    cherry_grade = models.CharField(max_length=2)
     price = models.DecimalField(max_digits=10, decimal_places=2)  
     grn_no = models.IntegerField(unique=False)
     transport = models.DecimalField(max_digits=10, decimal_places=2) 
@@ -87,4 +87,11 @@ class StockInventoryOutputs(models.Model):
 
 
     
-    
+class DailyPurchaseValidation(models.Model):
+    date = models.DateField()
+    cherry_grade = models.CharField(max_length=2)
+    cherry_kg = models.FloatField()
+    amount = models.FloatField()
+
+    class Meta:
+        db_table = 'daily_purchase_validation'

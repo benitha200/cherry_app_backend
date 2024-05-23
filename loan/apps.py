@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class ReactConfig(AppConfig):
+class LoanConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'react'
+    name = 'loan'

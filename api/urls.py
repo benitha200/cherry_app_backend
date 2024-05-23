@@ -5,6 +5,7 @@ from farmers.views import FileUploadAPIView,FileUploadFarmersAndFarmAPIView
 from transactions.views import *
 from .views import CustomTokenObtainPairView,CustomUserListView
 from main.views import register_user_api,LogoutView
+from loan.views import *
 
 # urlpatterns = [
 #     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -28,6 +29,7 @@ urlpatterns=[
     path('edittransaction/<str:pk>/',TransactionsEditAPIView.as_view(),name="edit transaction"),
     path('gettransactions/', TransactionsListView.as_view(), name='transactions-list'),
     path('getfinancialreport/', get_financial_report, name='get-financialreport'),
+    path('gettotalpurchasebydateandgrade/', total_purchase_by_date_and_grade, name='get-financialreport'),
     path('getdpr/',get_dpr,name="get-dpr"),
     path('batchreport/',BatchReportAPIView.as_view(),name="get-batchreport"),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -47,4 +49,13 @@ urlpatterns=[
     path('inventoryitems/<str:process_name>/',StockInventoryOutputsItemsListView.as_view()),
     path('stockinventoryupdate/<str:process_name>/<str:completed_date>/',StockInventoryUpdateAPIView.as_view()),
     
+    path('getloandata/', get_loan_data, name='get-loandata'),
+    path('requetloan/', RequestLoan.as_view(), name='request-loan'),
+    path('getloanrequests/<str:status>/', GetLoanRequests.as_view(), name='get-request-loan'),
+    path('getloan/<int:pk>/', GetLoan.as_view(), name='get-request-loan'),
+    path('approveloan/<int:pk>/', ApproveLoanView.as_view(), name='approve-loan'),
+    path('loan-installments/', LoanInstallmentCreateView.as_view(), name='loan-installment-create'),
+    path('loan-installments/<int:pk>/', LoanInstallmentRetrieveView.as_view(), name='loan-installment-retrieve'),
+    
+
 ]

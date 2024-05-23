@@ -12,6 +12,11 @@ from rest_framework.views import APIView
 from api.models import CustomUser
 from api.serializers import CustomUserSerializer
 from django.utils.html import escape
+from django.shortcuts import render
+
+
+def index(request):
+    return render(request, 'index.html')
 
 
 def home(request):

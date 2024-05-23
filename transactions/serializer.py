@@ -60,3 +60,8 @@ class BatchReportSerializer(serializers.Serializer):
     total_output_quantity=serializers.IntegerField()
 
 
+class DailyPurchaseValidationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyPurchaseValidation
+        fields = '__all__'
+
