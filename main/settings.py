@@ -13,10 +13,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%9fjwm5fs-i8z+^f=#v=*v4jgk+*_q!p=!a^#^yt%)bloh%8)s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-# ALLOWED_HOSTS = ['192.168.82.27','127.0.0.1']
-# CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = ['192.168.82.27','127.0.0.1','localhost','10.100.10.43']
+# CORS_ALLOW_ALL_ORIGINS = Tru,,e
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
 ]
@@ -190,7 +190,7 @@ USE_TZ = True
 
 # STATIC_URL = 'django_static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = '/static/'
+STATIC_URL = '/staticfiles/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'frontend'),
 ]
@@ -202,7 +202,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'api.CustomUser'
 
-REACT_APP_BUILD_PATH = "cws-transactions-frontend/dist"
+# REACT_APP_BUILD_PATH = "cws-transactions-frontend/dist"
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
 
