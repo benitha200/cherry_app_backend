@@ -16,7 +16,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Value
 from django.db import connection
-
+from django.shortcuts import get_object_or_404
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -570,6 +570,7 @@ def get_loan_data(request):
     if request.method == 'GET':
         transactions_data = Transactions.objects.all()
         daily_purchase_data = DailyPurchaseValidation.objects.all()
+        print(request.user)
 
 
         with connection.cursor() as cursor:
@@ -603,3 +604,12 @@ def get_loan_data(request):
         return JsonResponse(response_data, safe=False)
     else:
         return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+class UpdatePaidStatusView(APIView):
+    def post(self,request,pk,format=None):
+        transaction=get_object_or_404(Transactions,pk=pk)
+        transaction.is_paid=1
+        transaction.save()
+        serializer=TransactionsSerializer(transaction)
+        return Response(serializer.data,status.HTTP_200_OK)

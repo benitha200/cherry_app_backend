@@ -48,12 +48,15 @@ urlpatterns=[
     path('stockinventoryoutputedit/<int:pk>/',StockInventoryOutputsEditAPIView.as_view(),name='StockInventoryOutputsEditAPIView'),
     path('inventoryitems/<str:process_name>/',StockInventoryOutputsItemsListView.as_view()),
     path('stockinventoryupdate/<str:process_name>/<str:completed_date>/',StockInventoryUpdateAPIView.as_view()),
+    path('updatepaidstatus/<int:pk>/', UpdatePaidStatusView.as_view(), name='update-paid-status'),
+
     
     path('getloandata/', get_loan_data, name='get-loandata'),
     path('requetloan/', RequestLoan.as_view(), name='request-loan'),
     path('getloanrequests/<str:status>/', GetLoanRequests.as_view(), name='get-request-loan'),
     path('getloan/<int:pk>/', GetLoan.as_view(), name='get-request-loan'),
     path('approveloan/<int:pk>/', ApproveLoanView.as_view(), name='approve-loan'),
+    
     path('loan-installments/', LoanInstallmentCreateView.as_view(), name='loan-installment-create'),
     path('loan-installments/<int:pk>/', LoanInstallmentRetrieveView.as_view(), name='loan-installment-retrieve'),
     
