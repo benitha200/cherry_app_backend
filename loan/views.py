@@ -37,6 +37,7 @@ class ApproveLoanView(APIView):
         serializer=LoanSerializer(loan)
         return Response(serializer.data,status.HTTP_200_OK)
 
+
 class LoanInstallmentCreateView(generics.CreateAPIView):
     queryset = LoanInstallments.objects.all()
     serializer_class = LoanInstallmentSerializer
