@@ -6,6 +6,10 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from cws.models import Cws,StationSettings
+from django.utils import timezone
+from django.core.mail import EmailMessage
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.core.exceptions import ObjectDoesNotExist
 # from stationsettings.models import StationSettings
 
 class FarmerSerializer(serializers.ModelSerializer):
@@ -23,55 +27,109 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email')
 
+
 # class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 #     def validate(self, attrs):
+#         print(attrs)
 #         data = super().validate(attrs)
 #         refresh = self.get_token(self.user)
 #         data['refresh'] = str(refresh)
 #         data['access'] = str(refresh.access_token)
 
-#         # Save the refresh token to the user model
-#         user = User.objects.get(username=self.user)
-#         user.refresh_token = str(refresh)
-#         user.save()
+#         user = CustomUser.objects.get(username=self.user)
+#         data['email'] = user.email 
+#         data['role'] = user.role 
+#         data['cws_code'] = user.cws_code 
+#         data['cws_name'] = user.cws_name
+
+#         if user.cws_code is not None and user.cws_name is not None:
+#             cws = Cws.objects.filter(cws_code=user.cws_code).first()
+
+#             if cws:
+#                 cws_info = StationSettings.objects.filter(cws_id=cws.id)[:2]
+#                 serialized_data = serialize('json', cws_info)
+#                 data['cws'] = serialized_data
+#                 user.refresh_token = str(refresh)
+#                 user.save()
+#             else:
+#                 print("CWS not found for the given code.")
+#         else:
+#             user.refresh_token = str(refresh)
+#             user.save()
 
 #         return data
 
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    otp = serializers.CharField(write_only=True, required=False)
+
     def validate(self, attrs):
-        print(attrs)
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
+        try:
+            user = CustomUser.objects.get(username=attrs['username'])
+            print(f"User found: {user}")
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError("User does not exist")
 
-        user = CustomUser.objects.get(username=self.user)
-        data['email'] = user.email 
-        data['role'] = user.role 
-        data['cws_code'] = user.cws_code 
-        data['cws_name'] = user.cws_name
+        # First Step: Validate username and password, then send OTP
+        if 'otp' not in attrs:
+            if self._validate_password(attrs['password'], user):
+                try:
+                    otp = user.generate_otp()
+                    print(f"Generated OTP: {otp}")
 
-        if user.cws_code is not None and user.cws_name is not None:
-            cws = Cws.objects.filter(cws_code=user.cws_code).first()
+                    email = EmailMessage(
+                        'Your OTP Code',
+                        f'Your OTP code is {otp}',
+                        'from@example.com',  # Sender's email address
+                        ['test@gmail.com'],  # Recipient's email address
+                    )
+                    email.send()
+                    print(f"Email sent to {user.email}")
 
-            if cws:
-                cws_info = StationSettings.objects.filter(cws_id=cws.id)[:2]
-                serialized_data = serialize('json', cws_info)
-                data['cws'] = serialized_data
-                user.refresh_token = str(refresh)
-                user.save()
+                    return {'detail': "OTP sent to your email. Please enter the OTP to log in"}
+                    
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+                    raise serializers.ValidationError(f"Error sending email: {str(e)}")
             else:
-                print("CWS not found for the given code.")
+                raise serializers.ValidationError("Invalid password.")
         else:
-            user.refresh_token = str(refresh)
-            user.save()
+            # Second Step: Validate OTP
+            if user.otp == attrs['otp'] and user.otp_expiration > timezone.now():
+                # OTP is correct and not expired
+                data = super().validate(attrs)
+                refresh = self.get_token(self.user)
+                data['refresh'] = str(refresh)
+                data['access'] = str(refresh.access_token)
+                data['email'] = user.email
+                data['role'] = user.role
+                data['cws_code'] = user.cws_code
+                data['cws_name'] = user.cws_name
 
-        return data
-# class CustomUserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = CustomUser
-#         fields = ['id', 'username', 'role', 'cws_code', 'cws_name','password']
+                if user.cws_code and user.cws_name:
+                    cws = Cws.objects.filter(cws_code=user.cws_code).first()
+                    if cws:
+                        cws_info = StationSettings.objects.filter(cws_id=cws.id)[:2]
+                        serialized_data = serialize('json', cws_info)
+                        data['cws'] = serialized_data
+                        user.refresh_token = str(refresh)
+                        user.save()
+                    else:
+                        print("CWS not found for the given code.")
+                else:
+                    user.refresh_token = str(refresh)
+                    user.save()
 
+                return data
+            else:
+                raise serializers.ValidationError("Invalid or expired OTP.")
+
+    def _validate_password(self, raw_password, user):
+        """
+        Validate if the provided raw_password matches the user's password.
+        """
+        return user.check_password(raw_password)
+            
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 

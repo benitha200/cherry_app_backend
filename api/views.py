@@ -43,9 +43,10 @@ class FarmerAndFarmListView(generics.ListAPIView):
     def get_queryset(self):
         # Get the user's cwscode from the request user
         user_cwscode = self.request.user.cws_code
+        user_cwsname=self.request.user.cws_name
 
         # Filter the queryset based on the user's cwscode
-        queryset = FarmerAndFarmDetails.objects.filter(farmer_code__contains=user_cwscode)
+        queryset = FarmerAndFarmDetails.objects.filter(cws_name__contains=user_cwsname)
         
         return queryset
     
