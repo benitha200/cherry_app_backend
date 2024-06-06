@@ -27,19 +27,42 @@ Including another URLconf
 #     re_path(r"^(?P<path>.*)$", serve_react, {"document_root": settings.REACT_APP_BUILD_PATH}),
 # ]
 
+
+
+# from django.contrib import admin
+# # from django.urls import path, re_path
+# from django.conf import settings
+# from api.views import CustomTokenObtainPairView
+# from django.urls import path,include,re_path
+# from transactions.views import process_daily_purchase_validation,RetrieveDailyPurchase
+# from .views import *
+
+# urlpatterns = [
+#     path('admin/', admin.site.urls),
+#     # path('',home_view),
+#     path('api/',include('api.urls')),
+#     path('api/daily-purchase-validation/', process_daily_purchase_validation, name='daily-purchase-validation'),
+#     path('api/get-daily-purchase-validation/', RetrieveDailyPurchase.as_view(), name='get-daily-purchase-validation'),
+#     re_path(r'^.*$', index),
+# ]
+# urlpatterns += [
+#     path("azure-signin/", include("azure_signin.urls", namespace="azure_signin")),
+# ]
+
+
 from django.contrib import admin
-# from django.urls import path, re_path
-from django.conf import settings
+from django.urls import path, include, re_path
 from api.views import CustomTokenObtainPairView
-from django.urls import path,include,re_path
-from transactions.views import process_daily_purchase_validation,RetrieveDailyPurchase
-from .views import *
+from transactions.views import process_daily_purchase_validation, RetrieveDailyPurchase
+from .views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('/',include)
-    path('api/',include('api.urls')),
+    path('api/', include('api.urls')),
     path('api/daily-purchase-validation/', process_daily_purchase_validation, name='daily-purchase-validation'),
     path('api/get-daily-purchase-validation/', RetrieveDailyPurchase.as_view(), name='get-daily-purchase-validation'),
-    re_path(r'^.*$', index),
+    path('azure-signin/', include("azure_signin.urls", namespace="azure_signin")),
 ]
+
+# Add this line to serve the index.html file for any other paths
+# urlpatterns += [re_path(r'^.*$', index)]

@@ -13,12 +13,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%9fjwm5fs-i8z+^f=#v=*v4jgk+*_q!p=!a^#^yt%)bloh%8)s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.82.27','127.0.0.1','localhost','10.100.10.43']
 # CORS_ALLOW_ALL_ORIGINS = Tru,,e
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
+    "http://localhost",
 ]
 ALLOWED_HOSTS=['*']
 
@@ -30,7 +31,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
@@ -43,25 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     
 ]
-
-# settings.py
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.example.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'benithaiyuyisenga2002@gmail.com'
-# EMAIL_HOST_PASSWORD = 'm w v e g c a h i f z i r m v n'
-
-
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587 
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'benithaiyuyisenga2002@gmail.com' 
-EMAIL_HOST_PASSWORD = 'm w v e g c a h i f z i r m v n'
-
+INSTALLED_APPS += [
+    "azure_signin",
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -74,6 +58,40 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 
+# AZURE_SIGNIN = {
+#     "CLIENT_ID": "eedef855-b7e4-47b0-a212-4f8b6344834b",  # Mandatory
+#     "CLIENT_SECRET": "9zl8Q~WbxGOjnXUOA4~EPgwFXgIH1QLSLVQEyasq",  # Mandatory
+#     "TENANT_ID": "4b030d92-7ebd-4d2f-af2c-03b8af269059",  # Mandatory
+#     "SAVE_ID_TOKEN_CLAIMS": True,  # Optional, default is False.
+#     "RENAME_ATTRIBUTES": [
+#         ("employeeNumber", "employee_id"),
+#         ("affiliationNumber", "omk2"),
+#     ],  # Optional
+#     "REDIRECT_URI": "https://10.100.10.43/azure-signin/callback",  # Optional
+#     "SCOPES": ["User.Read.All"],  # Optional
+#     "AUTHORITY": "https://login.microsoftonline.com/" + "4b030d92-7ebd-4d2f-af2c-03b8af269059",  # Optional Or https://login.microsoftonline.com/common if multi-tenant
+#     "LOGOUT_REDIRECT_URI": "https://10.100.10.43/logout",  # Optional
+#     "PUBLIC_URLS": ["<public:view_name>",]  # Optional, public views accessible by non-authenticated users
+# }
+
+AZURE_SIGNIN = {
+    "CLIENT_ID": "dfe46435-d6ce-4d0b-96fa-30bbced62f5e",
+    "CLIENT_SECRET": "xLY8Q~vynRfqgHv82t63CtyVhG6InY-G_4.bTcWJ",
+    "TENANT_ID": "4b030d92-7ebd-4d2f-af2c-03b8af269059",
+    "REDIRECT_URI": "http://127.0.0.1:8000/azure-signin/callback",
+    "LOGOUT_REDIRECT_URI": "https://127.0.0.1:8000/logout",
+    "AUTHORITY": "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059",
+}
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "azure_signin.backends.AzureSigninBackend",
+]
+
+LOGIN_URL = "azure_signin:login"
+LOGIN_REDIRECT_URL = "/" # Or any other endpoint
+LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -82,6 +100,25 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'azure_signin': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=14),  
@@ -144,7 +181,7 @@ CORS_ALLOW_CREDENTIALS = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'frontend')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -207,12 +244,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-# STATIC_URL = 'django_static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = '/staticfiles/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend'),
-]
+
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

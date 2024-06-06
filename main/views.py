@@ -103,3 +103,7 @@ class LogoutView(APIView):
         except Exception as e:
             message={"message":"Error Occured"}
             return Response(message,status=status.HTTP_400_BAD_REQUEST)
+        
+
+# def home_view(request):
+#     return render(request, 'index.html')
