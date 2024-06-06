@@ -76,7 +76,7 @@ MIDDLEWARE = [
 
 AZURE_SIGNIN = {
     "CLIENT_ID": "",
-    "CLIENT_SECRET": "",
+    # "CLIENT_SECRET": "",
     "TENANT_ID": "",
     "REDIRECT_URI": "http://127.0.0.1:8000/azure-signin/callback",
     "LOGOUT_REDIRECT_URI": "https://127.0.0.1:8000/logout",
