@@ -59,9 +59,9 @@ MIDDLEWARE = [
 ]
 
 # AZURE_SIGNIN = {
-#     "CLIENT_ID": "eedef855-b7e4-47b0-a212-4f8b6344834b",  # Mandatory
-#     "CLIENT_SECRET": "9zl8Q~WbxGOjnXUOA4~EPgwFXgIH1QLSLVQEyasq",  # Mandatory
-#     "TENANT_ID": "4b030d92-7ebd-4d2f-af2c-03b8af269059",  # Mandatory
+#     "CLIENT_ID": "",  # Mandatory
+#     "CLIENT_SECRET": "",  # Mandatory
+#     "TENANT_ID": "",  # Mandatory
 #     "SAVE_ID_TOKEN_CLAIMS": True,  # Optional, default is False.
 #     "RENAME_ATTRIBUTES": [
 #         ("employeeNumber", "employee_id"),
@@ -69,7 +69,7 @@ MIDDLEWARE = [
 #     ],  # Optional
 #     "REDIRECT_URI": "https://10.100.10.43/azure-signin/callback",  # Optional
 #     "SCOPES": ["User.Read.All"],  # Optional
-#     "AUTHORITY": "https://login.microsoftonline.com/" + "4b030d92-7ebd-4d2f-af2c-03b8af269059",  # Optional Or https://login.microsoftonline.com/common if multi-tenant
+#     "AUTHORITY": "https://login.microsoftonline.com/" + "",  # Optional Or https://login.microsoftonline.com/common if multi-tenant
 #     "LOGOUT_REDIRECT_URI": "https://10.100.10.43/logout",  # Optional
 #     "PUBLIC_URLS": ["<public:view_name>",]  # Optional, public views accessible by non-authenticated users
 # }
