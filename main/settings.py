@@ -75,12 +75,12 @@ MIDDLEWARE = [
 # }
 
 AZURE_SIGNIN = {
-    "CLIENT_ID": "dfe46435-d6ce-4d0b-96fa-30bbced62f5e",
-    "CLIENT_SECRET": "xLY8Q~vynRfqgHv82t63CtyVhG6InY-G_4.bTcWJ",
-    "TENANT_ID": "4b030d92-7ebd-4d2f-af2c-03b8af269059",
+    "CLIENT_ID": "",
+    "CLIENT_SECRET": "",
+    "TENANT_ID": "",
     "REDIRECT_URI": "http://127.0.0.1:8000/azure-signin/callback",
     "LOGOUT_REDIRECT_URI": "https://127.0.0.1:8000/logout",
-    "AUTHORITY": "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059",
+    "AUTHORITY": "https://login.microsoftonline.com/",
 }
 
 AUTHENTICATION_BACKENDS = [
