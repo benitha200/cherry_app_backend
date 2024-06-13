@@ -17,7 +17,7 @@ class CwsCreateView(generics.CreateAPIView):
 
 class CwsListView(generics.ListAPIView):
     queryset=Cws.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     serializer_class=CwsSerializer
     http_method_names=['get']
 

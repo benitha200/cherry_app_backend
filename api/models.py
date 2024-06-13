@@ -31,8 +31,6 @@ class CustomUser(AbstractUser):
     cws_name = models.CharField(max_length=100, null=True,default="All")
     email=models.CharField(max_length=255,null=True,default="default@example.com")
     phone_number=models.CharField(max_length=12,default="0785283918")
-    otp = models.CharField(max_length=6, null=True, blank=True)
-    otp_expiration = models.DateTimeField(null=True, blank=True)
 
     objects = CustomUserManager()
     
@@ -43,13 +41,7 @@ class CustomUser(AbstractUser):
     class Meta:
         unique_together = ('username',)
 
-    def generate_otp(self):
-        import random
-        otp = str(random.randint(100000, 999999))
-        self.otp = otp
-        self.otp_expiration = timezone.now() + timedelta(minutes=10)  # OTP valid for 10 minutes
-        self.save()
-        return otp
+
 
 # Override the related_name for groups and user_permissions
 CustomUser._meta.get_field('groups').remote_field.related_name = 'custom_user_groups'

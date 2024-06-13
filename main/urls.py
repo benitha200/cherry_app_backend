@@ -54,7 +54,7 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from api.views import CustomTokenObtainPairView
 from transactions.views import process_daily_purchase_validation, RetrieveDailyPurchase
-from .views import index
+from .views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -62,6 +62,8 @@ urlpatterns = [
     path('api/daily-purchase-validation/', process_daily_purchase_validation, name='daily-purchase-validation'),
     path('api/get-daily-purchase-validation/', RetrieveDailyPurchase.as_view(), name='get-daily-purchase-validation'),
     path('azure-signin/', include("azure_signin.urls", namespace="azure_signin")),
+    path('login/', login, name='login'),
+    path('callback/', callback, name='callback'),
 ]
 
 # Add this line to serve the index.html file for any other paths
