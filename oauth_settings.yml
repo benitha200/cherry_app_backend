@@ -1,0 +1,8 @@
+app_id: "927e3efe-877d-429f-9c60-6de0c86ea83b"
+app_secret: "Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp"
+redirect: "http://localhost:5173"
+scopes:
+  - user.read
+  - mailboxsettings.read
+  - calendars.readwrite
+authority: "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059"

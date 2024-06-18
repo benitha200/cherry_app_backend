@@ -43,25 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     
 ]
-
-# settings.py
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.example.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'benithaiyuyisenga2002@gmail.com'
-# EMAIL_HOST_PASSWORD = 'm w v e g c a h i f z i r m v n'
-
-
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587 
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'benithaiyuyisenga2002@gmail.com' 
-EMAIL_HOST_PASSWORD = 'm w v e g c a h i f z i r m v n'
-
+INSTALLED_APPS += [
+    "azure_signin",
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -74,6 +58,41 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 
+# AZURE_SIGNIN = {
+#     "CLIENT_ID": "",  # Mandatory
+#     "CLIENT_SECRET": "",  # Mandatory
+#     "TENANT_ID": "",  # Mandatory
+#     "SAVE_ID_TOKEN_CLAIMS": True,  # Optional, default is False.
+#     "RENAME_ATTRIBUTES": [
+#         ("employeeNumber", "employee_id"),
+#         ("affiliationNumber", "omk2"),
+#     ],  # Optional
+#     "REDIRECT_URI": "https://10.100.10.43/azure-signin/callback",  # Optional
+#     "SCOPES": ["User.Read.All"],  # Optional
+#     "AUTHORITY": "https://login.microsoftonline.com/" + "",  # Optional Or https://login.microsoftonline.com/common if multi-tenant
+#     "LOGOUT_REDIRECT_URI": "https://10.100.10.43/logout",  # Optional
+#     "PUBLIC_URLS": ["<public:view_name>",]  # Optional, public views accessible by non-authenticated users
+# }
+
+AZURE_SIGNIN = {
+    "CLIENT_ID": "927e3efe-877d-429f-9c60-6de0c86ea83b",
+    "CLIENT_SECRET": "Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp",
+    "TENANT_ID": "4b030d92-7ebd-4d2f-af2c-03b8af269059",
+    "REDIRECT_URI": "http://localhost:8000/callback/",
+    "LOGOUT_REDIRECT_URI": "http://127.0.0.1:8000/logout",
+    "AUTHORITY": "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059",
+}
+SESSION_ENGINE = 'django.contrib.sessions.backends.db' 
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "azure_signin.backends.AzureSigninBackend",
+]
+
+LOGIN_URL = "azure_signin:login"
+LOGIN_REDIRECT_URL = "/" # Or any other endpoint
+LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -82,6 +101,25 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'azure_signin': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=2),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=14),  
@@ -144,7 +182,7 @@ CORS_ALLOW_CREDENTIALS = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'frontend')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -127,7 +127,7 @@ def get_financial_report(request):
     print(request.data)
     chosen_date_str = request.data.get('date', '')
     chosen_date = datetime.strptime(chosen_date_str, '%Y-%m-%d').date()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     user = request.user
 
     if user.role == "cws_manager":
@@ -172,7 +172,7 @@ def get_dpr(request):
 
 @api_view(['GET'])
 def get_all_batch(request):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     user = request.user
     if(user):
         print("user found")

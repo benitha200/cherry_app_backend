@@ -11,19 +11,21 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from api.models import CustomUser
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny
 
 # Create your views here.
 
 class FarmerCreateView(generics.CreateAPIView):
     queryset=Farmer.objects.all()
     serializer_class=FarmerSerializer
-    permission_classes=[permissions.IsAuthenticated]
+    # permission_classes=[permissions.IsAuthenticated]
+    permission_classes=[AllowAny]
     http_method_names=['post']
 
 
 class FarmerListView(generics.ListAPIView):
     serializer_class = FarmerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -37,7 +39,7 @@ class FarmerListView(generics.ListAPIView):
     
 class FarmerAndFarmListView(generics.ListAPIView):
     serializer_class = FarmerAndFarmSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     http_method_names = ['get']
 
     def get_queryset(self):
@@ -53,7 +55,7 @@ class FarmerAndFarmListView(generics.ListAPIView):
 
 class AllFarmerListView(generics.ListAPIView):
     serializer_class = FarmerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     http_method_names = ['get']
 
     def get_queryset(self):
