@@ -58,21 +58,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 
-# AZURE_SIGNIN = {
-#     "CLIENT_ID": "",  # Mandatory
-#     "CLIENT_SECRET": "",  # Mandatory
-#     "TENANT_ID": "",  # Mandatory
-#     "SAVE_ID_TOKEN_CLAIMS": True,  # Optional, default is False.
-#     "RENAME_ATTRIBUTES": [
-#         ("employeeNumber", "employee_id"),
-#         ("affiliationNumber", "omk2"),
-#     ],  # Optional
-#     "REDIRECT_URI": "https://10.100.10.43/azure-signin/callback",  # Optional
-#     "SCOPES": ["User.Read.All"],  # Optional
-#     "AUTHORITY": "https://login.microsoftonline.com/" + "",  # Optional Or https://login.microsoftonline.com/common if multi-tenant
-#     "LOGOUT_REDIRECT_URI": "https://10.100.10.43/logout",  # Optional
-#     "PUBLIC_URLS": ["<public:view_name>",]  # Optional, public views accessible by non-authenticated users
-# }
+
 
 AZURE_SIGNIN = {
     "CLIENT_ID": "927e3efe-877d-429f-9c60-6de0c86ea83b",
