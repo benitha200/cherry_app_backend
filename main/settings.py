@@ -78,10 +78,11 @@ AZURE_SIGNIN = {
     "CLIENT_ID": "927e3efe-877d-429f-9c60-6de0c86ea83b",
     "CLIENT_SECRET": "Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp",
     "TENANT_ID": "4b030d92-7ebd-4d2f-af2c-03b8af269059",
-    "REDIRECT_URI": "http://localhost:5173/",
-    "LOGOUT_REDIRECT_URI": "https://127.0.0.1:8000/logout",
+    "REDIRECT_URI": "http://localhost:8000/callback/",
+    "LOGOUT_REDIRECT_URI": "http://127.0.0.1:8000/logout",
     "AUTHORITY": "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059",
 }
+SESSION_ENGINE = 'django.contrib.sessions.backends.db' 
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
