@@ -61,7 +61,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/daily-purchase-validation/', process_daily_purchase_validation, name='daily-purchase-validation'),
     path('api/get-daily-purchase-validation/', RetrieveDailyPurchase.as_view(), name='get-daily-purchase-validation'),
-    path('azure-signin/', include("azure_signin.urls", namespace="azure_signin")),
     path('login/', start_authorization_flow, name='login'),
     path('callback/', callback, name='callback'),
 ]

@@ -474,7 +474,7 @@ def callback(request):
         'client_id': '927e3efe-877d-429f-9c60-6de0c86ea83b',
         'scope': 'User.Read',
         'code': code,
-        'redirect_uri': 'http://localhost:8000/callback/',
+        'redirect_uri': 'http://10.100.10.43:8000/callback/',
         'grant_type': 'authorization_code',
         'client_secret': 'Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
         # 'code_verifier': code_verifier
@@ -527,10 +527,10 @@ def callback(request):
     encoded_profile_json = urllib.parse.quote(profile_json2)
 
     # Redirecting to frontend with JSON profile data as query parameters
-    response = redirect(f"http://localhost:5173/?profile={encoded_profile_json}")
+    response = redirect(f"https://cherryapp.sucafina.com/?profile={encoded_profile_json}")
 
     # Configure CORS headers
-    response['Access-Control-Allow-Origin'] = 'http://localhost:5173'
+    response['Access-Control-Allow-Origin'] = 'https://cherryapp.sucafina.com'
     response['Access-Control-Allow-Credentials'] = 'true'
 
     return response
