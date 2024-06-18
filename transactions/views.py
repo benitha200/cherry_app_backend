@@ -127,24 +127,24 @@ def get_financial_report(request):
     print(request.data)
     chosen_date_str = request.data.get('date', '')
     chosen_date = datetime.strptime(chosen_date_str, '%Y-%m-%d').date()
-    permission_classes = [permissions.AllowAny]
-    user = request.user
+    # permission_classes = [permissions.AllowAny]
+    # user = request.user
 
-    if user.role == "cws_manager":
-        # cws_code = request.data.get('cws_code', '')
-        cws_code=user.cws_code
+    # if user.role == "cws_manager":
+    #     # cws_code = request.data.get('cws_code', '')
+    #     cws_code=user.cws_code
 
-        if not cws_code:
-            return Response({'error': 'cws_code is required for cws_manager.'}, status=status.HTTP_400_BAD_REQUEST)
+    #     if not cws_code:
+    #         return Response({'error': 'cws_code is required for cws_manager.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the Transactions for the specified cws_code and chosen_date
-        chosen_date_str = request.data.get('date', '')
-        chosen_date = datetime.strptime(chosen_date_str, '%Y-%m-%d').date()
+    #     # Get the Transactions for the specified cws_code and chosen_date
+    #     chosen_date_str = request.data.get('date', '')
+    #     chosen_date = datetime.strptime(chosen_date_str, '%Y-%m-%d').date()
 
-        transactions = Transactions.objects.filter(cws_code=cws_code, purchase_date=chosen_date).order_by('-id')
-        serializer = TransactionsSerializer(transactions, many=True)
+    #     transactions = Transactions.objects.filter(cws_code=cws_code, purchase_date=chosen_date).order_by('-id')
+    #     serializer = TransactionsSerializer(transactions, many=True)
 
-        return Response(serializer.data)
+    #     return Response(serializer.data)
     
     # transactions = Transactions.objects.all().order_by('-purchase_date')
     transactions = Transactions.objects.filter(purchase_date=chosen_date).order_by('-id')
