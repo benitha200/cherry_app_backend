@@ -241,8 +241,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'api.CustomUser'
 
-# REACT_APP_BUILD_PATH = "cws-transactions-frontend/dist"
-
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
 
 CSRF_EXEMPT_URLS = [
