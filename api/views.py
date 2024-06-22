@@ -37,22 +37,7 @@ class FarmerListView(generics.ListAPIView):
         
         return queryset
     
-# class FarmerAndFarmListView(generics.ListAPIView):
-#     serializer_class = FarmerAndFarmSerializer
-#     # permission_classes = [permissions.AllowAny]
-#     http_method_names = ['post']
 
-#     def get_queryset(self):
-#         # Get the user's cwscode from the request user
-#         # user_cwscode = self.request.user.cws_code
-#         # user_cwsname=self.request.user.cws_name
-
-#         user_cwsname = self.request.POST.get('cws_name')
-
-#         # Filter the queryset based on the user's cwscode
-#         queryset = FarmerAndFarmDetails.objects.filter(cws_name__contains=user_cwsname)
-        
-#         return queryset
     
 class FarmerAndFarmListView(mixins.ListModelMixin, generics.GenericAPIView):
     serializer_class = FarmerAndFarmSerializer
