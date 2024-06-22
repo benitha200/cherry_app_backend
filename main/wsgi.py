@@ -52,9 +52,4 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "main.settings"
 # Import Django's WSGI application
 from django.core.wsgi import get_wsgi_application
 
-<<<<<<< HEAD
-=======
-os.environ["DJANGO_SETTINGS_MODULE"] = "main.settings"
-
->>>>>>> fb18e65fe68a36326ac2439c38937168332246dc
 application = get_wsgi_application()

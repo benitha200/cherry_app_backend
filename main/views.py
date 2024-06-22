@@ -118,7 +118,7 @@
 #         f'https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/authorize'
 #         f'?client_id=927e3efe-877d-429f-9c60-6de0c86ea83b'
 #         f'&response_type=code'
-#         f'&redirect_uri=http://localhost:8000/callback/'
+#         f'&redirect_uri=http://10.100.10.43:8000/callback/'
 #         f'&response_mode=query'
 #         f'&scope=User.Read'
 #         f'&state=random_state_string'
@@ -135,7 +135,7 @@
 # #     token_data = {
 # #         'grant_type': 'authorization_code',
 # #         'code': code,
-# #         'redirect_uri': "http://localhost:8000/callback/",
+# #         'redirect_uri': "http://10.100.10.43:8000/callback/",
 # #         'client_id': "927e3efe-877d-429f-9c60-6de0c86ea83b",
 # #         'client_secret': "Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp",
 # #         'scope': 'User.Read'
@@ -164,7 +164,7 @@
 # #         'client_id': "927e3efe-877d-429f-9c60-6de0c86ea83b",
 # #         'scope': 'User.Read',
 # #         'code': code,
-# #         'redirect_uri':"http://localhost:8000/callback",
+# #         'redirect_uri':"http://10.100.10.43:8000/callback",
 # #         'grant_type': 'authorization_code',
 # #         'client_secret': "Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp"
 # #     }
@@ -209,7 +209,7 @@
 #         "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/authorize?"
 #         "response_type=code&"
 #         "client_id=927e3efe-877d-429f-9c60-6de0c86ea83b&"
-#         "redirect_uri=http://localhost:8000/callback/&"
+#         "redirect_uri=http://10.100.10.43:8000/callback/&"
 #         "scope=User.Read&"
 #         "code_challenge_method=S256&"
 #         f"code_challenge={code_challenge}&"
@@ -234,7 +234,7 @@
 #         'client_id': '927e3efe-877d-429f-9c60-6de0c86ea83b',
 #         'scope': 'User.Read',
 #         'code': code,
-#         'redirect_uri': 'http://localhost:8000/callback/',
+#         'redirect_uri': 'http://10.100.10.43:8000/callback/',
 #         'grant_type': 'authorization_code',
 #         'client_secret': 'Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
 #         'code_verifier': code_verifier
@@ -286,7 +286,7 @@
 # #         'client_id': '927e3efe-877d-429f-9c60-6de0c86ea83b',
 # #         'scope': 'User.Read',
 # #         'code': code,
-# #         'redirect_uri': 'http://localhost:8000/callback/',
+# #         'redirect_uri': 'http://10.100.10.43:8000/callback/',
 # #         'grant_type': 'authorization_code',
 # #         'client_secret': 'Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
 # #         # If PKCE is used, include the code_verifier:
@@ -426,7 +426,7 @@ def login(request):
         "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/authorize?"
         "response_type=code&"
         "client_id=927e3efe-877d-429f-9c60-6de0c86ea83b"
-        "redirect_uri=http://localhost:8000/callback/&"
+        "redirect_uri=https://cherryapp.sucafina.com:8000/callback/&"
         "scope=User.Read&"
         "code_challenge_method=S256&"
         f"code_challenge={code_challenge}&"
@@ -450,7 +450,7 @@ def start_authorization_flow(request):
 
     auth_url = msal_app.get_authorization_request_url(
         scopes=['User.Read'],
-        redirect_uri='http://localhost:8000/callback/',
+        redirect_uri='https://cherryapp.sucafina.com:8000/callback/',
         code_challenge=code_challenge,
         code_challenge_method='S256',
         state='random_state_string',
@@ -474,7 +474,7 @@ def callback(request):
         'client_id': '927e3efe-877d-429f-9c60-6de0c86ea83b',
         'scope': 'User.Read',
         'code': code,
-        'redirect_uri': 'http://10.100.10.43:8000/callback/',
+        'redirect_uri': 'https://cherryapp.sucafina.com:8000/callback/',
         'grant_type': 'authorization_code',
         'client_secret': 'Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
         # 'code_verifier': code_verifier
@@ -544,13 +544,13 @@ def callback(request):
     # profile = json.dump(response_data['profile'])
     # print(json.dumps(profile))
     # # response = HttpResponse()
-    # response = redirect(f"http://localhost:5173/?profile={profile}")
+    # response = redirect(f"http://10.100.10.43:5173/?profile={profile}")
     # # response.set_cookie('profile', json.dumps(user_profile), httponly=False, samesite='None', secure=False)
     
     # # return JsonResponse(response_data)
 
     # # Configure CORS headers
-    # response['Access-Control-Allow-Origin'] = 'http://localhost:5173'
+    # response['Access-Control-Allow-Origin'] = 'http://10.100.10.43:5173'
     # response['Access-Control-Allow-Credentials'] = 'true'
     # return response
 
@@ -570,7 +570,7 @@ def callback(request):
 #         'client_id': '927e3efe-877d-429f-9c60-6de0c86ea83b',
 #         'scope': 'User.Read',
 #         'code': code,
-#         'redirect_uri': 'http://localhost:8000/callback/',
+#         'redirect_uri': 'http://10.100.10.43:8000/callback/',
 #         'grant_type': 'authorization_code',
 #         'client_secret': 'Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
 #         'code_verifier': code_verifier
@@ -619,11 +619,11 @@ def callback(request):
 #     }
 
 #     # Set the profile cookie and return redirect
-#     response = redirect("http://localhost:5173")
+#     response = redirect("http://10.100.10.43:5173")
 #     response.set_cookie('profile', json.dumps(user_profile), httponly=False, samesite='None', secure=False)
     
 #     # Configure CORS headers
-#     response['Access-Control-Allow-Origin'] = 'http://localhost:5173'
+#     response['Access-Control-Allow-Origin'] = 'http://10.100.10.43:5173'
 #     response['Access-Control-Allow-Credentials'] = 'true'
 #     return response
 
@@ -646,7 +646,7 @@ def callback(request):
 #     token_response = msal_app.acquire_token_by_authorization_code(
 #         code=code,
 #         scopes=['User.Read'],
-#         redirect_uri='http://localhost:8000/callback/',
+#         redirect_uri='http://10.100.10.43:8000/callback/',
 #         code_verifier=code_verifier
 #     )
 
@@ -662,7 +662,7 @@ def callback(request):
 #     response.set_cookie('profile', profile, httponly=False, samesite='None', secure=False)
 
 #     # Redirect to the Vite React app
-#     response['Access-Control-Allow-Origin'] = 'http://localhost:5173'
+#     response['Access-Control-Allow-Origin'] = 'http://10.100.10.43:5173'
 #     response['Access-Control-Allow-Credentials'] = 'true'
 #     return response
 
