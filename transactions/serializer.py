@@ -38,6 +38,13 @@ class StockInventoryOutputsSerializer(serializers.ModelSerializer):
         model=StockInventoryOutputs
         fields=['id','process_name','process_type','output_quantity','out_turn','created_at']
 
+class StockInventoryOutputsEditSerializer(serializers.ModelSerializer):
+    process_type_output = serializers.ReadOnlyField(source='process_type.output')
+
+    class Meta:
+        model = StockInventoryOutputs
+        fields = ['id','process_name', 'process_type_output', 'output_quantity', 'created_at']
+
 class InventoryOutputItemsSerializer(serializers.ModelSerializer):
     process_type_output = serializers.ReadOnlyField(source='process_type.output')
 

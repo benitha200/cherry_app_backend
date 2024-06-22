@@ -29,6 +29,7 @@ urlpatterns=[
     path('edittransaction/<str:pk>/',TransactionsEditAPIView.as_view(),name="edit transaction"),
     path('gettransactions/', TransactionsListView.as_view(), name='transactions-list'),
     path('getfinancialreport/', get_financial_report, name='get-financialreport'),
+    path('approvetransactions/',approve_transactions,name="approve-transactions"),
     path('gettotalpurchasebydateandgrade/', total_purchase_by_date_and_grade, name='get-financialreport'),
     path('getdpr/',get_dpr,name="get-dpr"),
     path('batchreport/',BatchReportAPIView.as_view(),name="get-batchreport"),

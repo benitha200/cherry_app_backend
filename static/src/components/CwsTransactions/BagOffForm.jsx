@@ -443,6 +443,9 @@ function get_output_items(batch_no){
             const updatedData = e.data;
             const id = updatedData.id;
 
+            const total=received_cherry_kg
+            let out_turn_edited=(totalKgs/received_cherry_kg)*100
+
             console.log(updatedData);
             console.log(id);
 

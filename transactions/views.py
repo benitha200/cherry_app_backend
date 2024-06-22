@@ -33,18 +33,22 @@ def process_transaction_data(request):
     grade=data['cherry_grade']
 
     try:
-        cws_code = data['cws_code']
+        cws_name = data['cws_name']
         cherry_grade = data['cherry_grade'] if len(data['cherry_grade']) > 1 else None
 
 
         if cherry_grade is None:
             raise ValueError("Cherry grade should be at least 2 characters long.")
 
-        station_settings = StationSettings.objects.get(cws__cws_code=cws_code, grade=data['cherry_grade'][1])
+        station_settings = StationSettings.objects.get(cws__cws_name=cws_name, grade=data['cherry_grade'][1])
+        cws = get_object_or_404(Cws, cws_name=cws_name)
+        cws_code = cws.cws_code
+        print("cws code")
+        print(cws_code)
         print(station_settings)
         price = station_settings.price_per_kg
         acceptable_transport = station_settings.transport_limit
-
+        data['cws_code']=cws_code
         data['price'] = price
 
         # Check if the provided transport is acceptable
@@ -52,7 +56,7 @@ def process_transaction_data(request):
             return Response({"error": f"Your transport is not acceptable. The acceptable transport limit is {acceptable_transport}"}, status=status.HTTP_400_BAD_REQUEST)
 
     except StationSettings.DoesNotExist:
-        return Response({"error": f"StationSettings not found for cws code {cws_code} and grade {cherry_grade}"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": f"StationSettings not found for cws name {cws_name} and grade {cherry_grade}"}, status=status.HTTP_404_NOT_FOUND)
     except ValueError as ve:
         return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
@@ -66,7 +70,7 @@ def process_transaction_data(request):
         formatted_month = purchase_date_obj.strftime('%m')
         formatted_day = purchase_date_obj.strftime('%d')
 
-        batch_no = f"{last_two_digits_of_year}{data['cws_code']}{formatted_month}{formatted_day}{data['cherry_grade']}"
+        batch_no = f"{last_two_digits_of_year}{cws_code}{formatted_month}{formatted_day}{data['cherry_grade']}"
         season = datetime.now().year
         
 
@@ -147,10 +151,26 @@ def get_financial_report(request):
     #     return Response(serializer.data)
     
     # transactions = Transactions.objects.all().order_by('-purchase_date')
-    transactions = Transactions.objects.filter(purchase_date=chosen_date).order_by('-id')
+    transactions = Transactions.objects.filter(purchase_date=chosen_date,is_approved=0).order_by('-id')
     serializer = TransactionsSerializer(transactions, many=True)
 
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+def approve_transactions(request):
+    try:
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({'error': 'No IDs provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update the is_approved field to 1 for the given IDs
+        Transactions.objects.filter(id__in=ids).update(is_approved=1)
+        
+        return Response({'message': 'Transactions approved successfully'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
 # Get Direct Purchase Report
 
@@ -170,26 +190,25 @@ def get_dpr(request):
 
     return Response(serializer.data)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def get_all_batch(request):
-    permission_classes = [permissions.AllowAny]
-    user = request.user
-    if(user):
-        print("user found")
-        
-        if(user.cws_name):
-            print(user.cws_name)
-            cwsname=user.cws_name
-            data = Transactions.get_total_kgs_by_batch_per_station(cwsname)
-            # data = Transactions.get_total_kgs_by_batch()
-    
+    print(request)
+    # user = request.user
+    cwsname = None
+
+    if request.method == 'POST':
+        cwsname = request.data.get('cws_name', None)
+        print(cwsname)
+
+    if cwsname:
+        print("User and cws_name found")
+        print(cwsname)
+        data = Transactions.get_total_kgs_by_batch_per_station(cwsname)
     else:
         data = Transactions.get_total_kgs_by_batch()
     
     serializer = BatchTransactionsSerializer(data, many=True)
-
     return Response(serializer.data)
-
 
 
 class ReceiveHarvestListCreateView(generics.ListCreateAPIView):
@@ -202,7 +221,7 @@ class ReceiveHarvestListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.is_valid(raise_exception=True)  # Validate the serializer
-        serializer.validated_data['location_to'] = self.request.user.cws_name
+        # serializer.validated_data['location_to'] = self.request.user.cws_name
         instance = serializer.save()
         Transactions.objects.filter(batch_no=instance.batch_no).update(is_received=1,status=1)
         
@@ -231,22 +250,25 @@ class CreateInventory(generics.CreateAPIView):
         req_batch_no = request.data.get('process_name')
         Transactions.objects.filter(batch_no=req_batch_no).update(status=2)
 
+
         # Check if inventory with process_name already exists
         if Inventory.objects.filter(process_name=req_batch_no).exists():
             return Response(
                 {"message": "Inventory with this process name already exists.", "success": False},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        self.perform_create(serializer)
+        
 
-        if self.request.user:
-            if self.request.user.cws_name:
-                serializer.validated_data['location_to'] = self.request.user.cws_name
-                self.perform_create(serializer)
-            else:
-                return Response(
-                    {"message": "Oops you are not logged in", "success": False},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
+        # if self.request.user:
+            # if self.request.user.cws_name:
+            #     serializer.validated_data['location_to'] = self.request.user.cws_name
+            #     self.perform_create(serializer)
+            # else:
+            #     return Response(
+            #         {"message": "Oops you are not logged in", "success": False},
+            #         status=status.HTTP_401_UNAUTHORIZED
+            #     )
 
         ReceiveHarvest.objects.filter(batch_no=req_batch_no).update(status=1)
 
@@ -259,13 +281,18 @@ class RetrieveProcessingData(APIView):
     def get(self, request, *args, **kwargs):
         try:
             receive_harvest_instances = ReceiveHarvest.objects.all()
+            request.user="Mashesha"
             print(request.user)
+            print(receive_harvest_instances)
 
             combined_data = []
             for receive_harvest_instance in receive_harvest_instances:
                 try:
-                    inventory_instance = Inventory.objects.get(process_name=receive_harvest_instance.batch_no, status=0,location_to=request.user)
+                    print(receive_harvest_instance.batch_no)
+                    inventory_instance = Inventory.objects.get(process_name=receive_harvest_instance.batch_no, status=0,location_to="Mashesha")
                     serialized_data = CombinedDataSerializer(receive_harvest_instance).data
+                    print("serialized_data")
+                    print(serialized_data)
                     serialized_data['process_type'] = inventory_instance.process_type.outputs
                     serialized_data['schedule_date'] = inventory_instance.schedule_date
                     combined_data.append(serialized_data)
@@ -303,7 +330,8 @@ class RetrieveBaggedOffData(APIView):
 
 class StockInventoryOutputsEditAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = StockInventoryOutputs.objects.all()
-    serializer_class = StockInventoryOutputsSerializer
+    # serializer_class = StockInventoryOutputsSerializer
+    serializer_class= StockInventoryOutputsEditSerializer
     lookup_field = 'pk'
 
     def update(self, request, *args, **kwargs):

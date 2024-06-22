@@ -415,13 +415,29 @@ class LogoutView(APIView):
             message = {"message": "Error Occurred"}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
-def login(request):
-    code_verifier = generate_code_verifier()
-    code_challenge = generate_code_challenge(code_verifier)
+# def login(request):
+#     code_verifier = generate_code_verifier()
+
+#     print("code verifer")
+#     print(code_verifier)
+#     code_challenge = generate_code_challenge(code_verifier)
+
+#     print("code challenge")
+#     print(code_challenge)
     
-    # Store code_verifier in session
-    request.session['code_verifier'] = code_verifier
+#     # Store code_verifier in session
+#     request.session['code_verifier'] = code_verifier
     
+#     authorization_url = (
+#         "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/authorize?"
+#         "response_type=code&"
+#         "client_id=927e3efe-877d-429f-9c60-6de0c86ea83b"
+#         "redirect_uri=http://localhost:8000/callback/&"
+#         "scope=User.Read&"
+#         "code_challenge_method=S256&"
+#         f"code_challenge={code_challenge}&"
+#         "state=random_state_string"
+#     )
     authorization_url = (
         "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/authorize?"
         "response_type=code&"
@@ -433,14 +449,21 @@ def login(request):
         "state=random_state_string"
     )
     
-    return redirect(authorization_url)
+#     return redirect(authorization_url)
 
 def start_authorization_flow(request):
     code_verifier = generate_code_verifier()
     code_challenge = generate_code_challenge(code_verifier)
+
+    print("code verifer")
+    print(code_verifier)
+    print("code challenge")
+    print(code_challenge)
     
     # Store the code_verifier in the session
     request.session['code_verifier'] = code_verifier
+
+    print("Stored code_verifier in session:", request.session['code_verifier'])
     
     msal_app = ConfidentialClientApplication(
         client_id='927e3efe-877d-429f-9c60-6de0c86ea83b',
@@ -474,7 +497,7 @@ def callback(request):
         'client_id': '927e3efe-877d-429f-9c60-6de0c86ea83b',
         'scope': 'User.Read',
         'code': code,
-        'redirect_uri': 'https://cherryapp.sucafina.com:8000/callback/',
+        'redirect_uri': 'http://localhost:8000/callback/',
         'grant_type': 'authorization_code',
         'client_secret': 'Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
         # 'code_verifier': code_verifier
@@ -527,144 +550,14 @@ def callback(request):
     encoded_profile_json = urllib.parse.quote(profile_json2)
 
     # Redirecting to frontend with JSON profile data as query parameters
-    response = redirect(f"https://cherryapp.sucafina.com/?profile={encoded_profile_json}")
+    response = redirect(f"http://localhost:5173/?profile={encoded_profile_json}")
 
     # Configure CORS headers
-    response['Access-Control-Allow-Origin'] = 'https://cherryapp.sucafina.com'
+    response['Access-Control-Allow-Origin'] = 'http://localhost:5173'
     response['Access-Control-Allow-Credentials'] = 'true'
 
     return response
     
-    # profile = token_response.get('id_token_claims', {})
-    
-    # response_data = {
-    #     'profile': user_profile
-    # }
-    # # Create JsonResponse
-    # profile = json.dump(response_data['profile'])
-    # print(json.dumps(profile))
-    # # response = HttpResponse()
-    # response = redirect(f"http://10.100.10.43:5173/?profile={profile}")
-    # # response.set_cookie('profile', json.dumps(user_profile), httponly=False, samesite='None', secure=False)
-    
-    # # return JsonResponse(response_data)
-
-    # # Configure CORS headers
-    # response['Access-Control-Allow-Origin'] = 'http://10.100.10.43:5173'
-    # response['Access-Control-Allow-Credentials'] = 'true'
-    # return response
-
-
-# def callback(request):
-#     code = request.GET.get('code')
-#     if not code:
-#         return HttpResponse('Error: No code returned', status=400)
-
-#     # Retrieve code_verifier from session
-#     code_verifier = request.session.get('code_verifier')
-#     if not code_verifier:
-#         return HttpResponse('Error: code_verifier not found in session', status=400)
-    
-#     token_url = 'https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/token'
-#     token_data = {
-#         'client_id': '927e3efe-877d-429f-9c60-6de0c86ea83b',
-#         'scope': 'User.Read',
-#         'code': code,
-#         'redirect_uri': 'http://10.100.10.43:8000/callback/',
-#         'grant_type': 'authorization_code',
-#         'client_secret': 'Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
-#         'code_verifier': code_verifier
-#     }
-    
-#     try:
-#         token_response = requests.post(token_url, data=token_data)
-#         token_response.raise_for_status()
-#     except requests.RequestException as e:
-#         return HttpResponse(f"Error: {str(e)}", status=400)
-    
-#     try:
-#         token_response_data = token_response.json()
-#     except ValueError:
-#         return HttpResponse('Error: Unable to parse token response', status=400)
-    
-#     if 'error' in token_response_data:
-#         error_description = token_response_data.get('error_description', 'No description provided')
-#         return HttpResponse(f"Error: {token_response_data['error']} - {error_description}", status=400)
-    
-#     access_token = token_response_data.get('access_token')
-    
-#     if not access_token:
-#         return HttpResponse('Error: No access token received', status=400)
-    
-#     # Retrieve user profile information
-#     graph_url = 'https://graph.microsoft.com/v1.0/me'
-#     headers = {
-#         'Authorization': f'Bearer {access_token}'
-#     }
-    
-#     try:
-#         response = requests.get(graph_url, headers=headers)
-#         response.raise_for_status()
-#     except requests.RequestException as e:
-#         return HttpResponse(f"Error: {str(e)}", status=400)
-    
-#     try:
-#         user_profile = response.json()
-#     except ValueError:
-#         return HttpResponse('Error: Unable to parse user profile response', status=400)
-    
-#     # Create JsonResponse
-#     response_data = {
-#         'profile': user_profile
-#     }
-
-#     # Set the profile cookie and return redirect
-#     response = redirect("http://10.100.10.43:5173")
-#     response.set_cookie('profile', json.dumps(user_profile), httponly=False, samesite='None', secure=False)
-    
-#     # Configure CORS headers
-#     response['Access-Control-Allow-Origin'] = 'http://10.100.10.43:5173'
-#     response['Access-Control-Allow-Credentials'] = 'true'
-#     return response
-
-
-# def callback(request):
-#     code = request.GET.get('code')
-#     state = request.GET.get('state')
-    
-#     code_verifier = request.session.get('code_verifier')
-    
-#     if not code_verifier:
-#         return HttpResponseBadRequest('Error: code_verifier not found in session')
-
-#     msal_app = ConfidentialClientApplication(
-#         client_id='927e3efe-877d-429f-9c60-6de0c86ea83b',
-#         client_credential='Auj8Q~rCZIScD3RsOnJL6rhddvo26GM4xqqXxcgp',
-#         authority='https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059'
-#     )
-    
-#     token_response = msal_app.acquire_token_by_authorization_code(
-#         code=code,
-#         scopes=['User.Read'],
-#         redirect_uri='http://10.100.10.43:8000/callback/',
-#         code_verifier=code_verifier
-#     )
-
-#     if 'error' in token_response:
-#         return HttpResponseBadRequest(f"Error: {token_response['error']} - {token_response['error_description']}")
-
-#     # Extract the profile data
-#     profile = token_response.get('id_token_claims', {})
-
-#     response = JsonResponse({'profile': profile})
-    
-#     # Set cookies for the profile data
-#     response.set_cookie('profile', profile, httponly=False, samesite='None', secure=False)
-
-#     # Redirect to the Vite React app
-#     response['Access-Control-Allow-Origin'] = 'http://10.100.10.43:5173'
-#     response['Access-Control-Allow-Credentials'] = 'true'
-#     return response
 
 
 def generate_code_verifier():
@@ -673,3 +566,10 @@ def generate_code_verifier():
 def generate_code_challenge(code_verifier):
     code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
     return base64.urlsafe_b64encode(code_challenge).rstrip(b'=').decode('utf-8')
+
+# def generate_code_verifier():
+#     return base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b'=').decode('utf-8')
+
+# def generate_code_challenge(code_verifier):
+#     code_challenge = hashlib.sha256(code_verifier.encode('utf-8')).digest()
+#     return base64.urlsafe_b64encode(code_challenge).rstrip(b'=').decode('utf-8')

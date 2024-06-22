@@ -23,6 +23,7 @@ class Transactions(models.Model):
     synced=models.IntegerField(default=1,null=True)
     id_no=models.IntegerField(default=0,null=True)
     is_received=models.IntegerField(default=0)
+    is_approved=models.IntegerField(default=0)
     is_paid=models.IntegerField(default=0)
     status=models.IntegerField(default=0)
     plot_name=models.CharField(max_length=255,null=True)
@@ -41,7 +42,7 @@ class Transactions(models.Model):
     
     @classmethod
     def get_total_kgs_by_batch_per_station(cls,cws_name):
-        queryset = cls.objects.filter(cws_name=cws_name, is_received=0).values('batch_no', 'cws_name', 'cherry_grade', 'purchase_date').annotate(total_kgs=Sum('cherry_kg')).order_by('batch_no')
+        queryset = cls.objects.filter(cws_name=cws_name, is_received=0,is_approved=1).values('batch_no', 'cws_name', 'cherry_grade', 'purchase_date').annotate(total_kgs=Sum('cherry_kg')).order_by('batch_no')
         return queryset
 
 

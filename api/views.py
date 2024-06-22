@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics,permissions
+from rest_framework import generics,permissions, mixins
 from farmers.models import Farmer,FarmerAndFarmDetails
 from .serializers import FarmerSerializer,CustomUserSerializer,FarmerAndFarmSerializer
 from rest_framework import status
@@ -37,22 +37,38 @@ class FarmerListView(generics.ListAPIView):
         
         return queryset
     
-class FarmerAndFarmListView(generics.ListAPIView):
-    serializer_class = FarmerAndFarmSerializer
-    permission_classes = [permissions.AllowAny]
-    http_method_names = ['get']
+# class FarmerAndFarmListView(generics.ListAPIView):
+#     serializer_class = FarmerAndFarmSerializer
+#     # permission_classes = [permissions.AllowAny]
+#     http_method_names = ['post']
 
-    def get_queryset(self):
-        # Get the user's cwscode from the request user
-        user_cwscode = self.request.user.cws_code
-        user_cwsname=self.request.user.cws_name
+#     def get_queryset(self):
+#         # Get the user's cwscode from the request user
+#         # user_cwscode = self.request.user.cws_code
+#         # user_cwsname=self.request.user.cws_name
 
-        # Filter the queryset based on the user's cwscode
-        queryset = FarmerAndFarmDetails.objects.filter(cws_name__contains=user_cwsname)
+#         user_cwsname = self.request.POST.get('cws_name')
+
+#         # Filter the queryset based on the user's cwscode
+#         queryset = FarmerAndFarmDetails.objects.filter(cws_name__contains=user_cwsname)
         
-        return queryset
+#         return queryset
     
+class FarmerAndFarmListView(mixins.ListModelMixin, generics.GenericAPIView):
+    serializer_class = FarmerAndFarmSerializer
+    permission_classes = [AllowAny]
+    http_method_names = ['post']
 
+    def post(self, request, *args, **kwargs):
+        user_cwsname = request.data.get('cws_name')
+        
+        if user_cwsname is not None:
+            queryset = FarmerAndFarmDetails.objects.filter(cws_name__contains=user_cwsname)
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "cws_name not provided"}, status=400)
+    
 class AllFarmerListView(generics.ListAPIView):
     serializer_class = FarmerSerializer
     permission_classes = [permissions.AllowAny]
