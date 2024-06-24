@@ -17,6 +17,71 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Value
 from django.db import connection
 from django.shortcuts import get_object_or_404
+from django.db.models import Sum, Avg, F, ExpressionWrapper, DecimalField
+
+
+# class TotalCherryPurchasedView(APIView):
+#     def get(self, request):
+#         # Total where cherry grade contains "A" and is_approved=1
+#         total_kg_grade_a = Transactions.objects.filter(cherry_grade__icontains="A", is_approved=1).aggregate(total_kgs=Sum('cherry_kg'))
+
+#         # Total where cherry grade contains "B" and is_approved=1
+#         total_kg_grade_b = Transactions.objects.filter(cherry_grade__icontains="B", is_approved=1).aggregate(total_kgs=Sum('cherry_kg'))
+
+#         # Total value where (cherry_kg + transport) * price and is_approved=1
+#         total_value = Transactions.objects.filter(is_approved=1).annotate(
+#             total_value=(F('cherry_kg') + F('transport')) * F('price')
+#         ).aggregate(total=Sum('total_value'))
+
+#         data = {
+#             'total_kg_grade_a': total_kg_grade_a['total_kgs'],
+#             'total_kg_grade_b': total_kg_grade_b['total_kgs'],
+#             'total_value': total_value['total'],
+#         }
+#         return Response(data, status=status.HTTP_200_OK)
+        
+
+class TotalCherryPurchasedView(APIView):
+    def get(self, request):
+        try:
+            # Total weight for cherry grade containing "A" and is_approved=1
+            total_kgs_grade_A = Transactions.objects.filter(cherry_grade__icontains='A', is_approved=1).aggregate(total_kgs=Sum('cherry_kg'))['total_kgs'] or 0
+
+            # Average price for cherry grade containing "A" and is_approved=1 including transport
+            avg_price_grade_A = Transactions.objects.filter(cherry_grade__icontains='A', is_approved=1).annotate(
+                total_price_with_transport=ExpressionWrapper(
+                    F('price') + F('transport'), output_field=DecimalField(max_digits=10, decimal_places=2)
+                )
+            ).aggregate(avg_price=Avg('total_price_with_transport'))['avg_price'] or 0
+
+            # Total weight for cherry grade containing "B" and is_approved=1
+            total_kgs_grade_B = Transactions.objects.filter(cherry_grade__icontains='B', is_approved=1).aggregate(total_kgs=Sum('cherry_kg'))['total_kgs'] or 0
+
+            # Average price for cherry grade containing "B" and is_approved=1 including transport
+            avg_price_grade_B = Transactions.objects.filter(cherry_grade__icontains='B', is_approved=1).annotate(
+                total_price_with_transport=ExpressionWrapper(
+                    F('price') + F('transport'), output_field=DecimalField(max_digits=10, decimal_places=2)
+                )
+            ).aggregate(avg_price=Avg('total_price_with_transport'))['avg_price'] or 0
+
+            # Total value where is_approved=1
+            total_value = Transactions.objects.filter(is_approved=1).annotate(
+                total_amount=ExpressionWrapper(
+                    F('cherry_kg') * F('price') + F('transport') * F('cherry_kg'),
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                )
+            ).aggregate(total_value=Sum('total_amount'))['total_value'] or 0
+
+            return Response({
+                'total_kg_grade_a': total_kgs_grade_A,
+                'avg_price_grade_a': avg_price_grade_A,
+                'total_kg_grade_b': total_kgs_grade_B,
+                'avg_price_grade_b': avg_price_grade_B,
+                'total_value': total_value,
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -151,10 +216,99 @@ def get_financial_report(request):
     #     return Response(serializer.data)
     
     # transactions = Transactions.objects.all().order_by('-purchase_date')
-    transactions = Transactions.objects.filter(purchase_date=chosen_date,is_approved=0).order_by('-id')
+    transactions = Transactions.objects.filter(purchase_date=chosen_date,is_approved=1).order_by('-id')
     serializer = TransactionsSerializer(transactions, many=True)
 
     return Response(serializer.data)
+
+@api_view(['GET'])
+def get_all_transactions(request):
+    # print(request.data)
+    
+    # permission_classes = [permissions.AllowAny]
+    # user = request.user
+
+    # if user.role == "cws_manager":
+    #     # cws_code = request.data.get('cws_code', '')
+    #     cws_code=user.cws_code
+
+    #     if not cws_code:
+    #         return Response({'error': 'cws_code is required for cws_manager.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     # Get the Transactions for the specified cws_code and chosen_date
+    #     chosen_date_str = request.data.get('date', '')
+    #     chosen_date = datetime.strptime(chosen_date_str, '%Y-%m-%d').date()
+
+    #     transactions = Transactions.objects.filter(cws_code=cws_code, purchase_date=chosen_date).order_by('-id')
+    #     serializer = TransactionsSerializer(transactions, many=True)
+
+    #     return Response(serializer.data)
+    
+    # transactions = Transactions.objects.all().order_by('-purchase_date')
+    transactions = Transactions.objects.filter(is_approved=0).order_by('-id')
+    serializer = TransactionsSerializer(transactions, many=True)
+
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_pending_transactions(request):
+    # print(request.data)
+    
+    # permission_classes = [permissions.AllowAny]
+    # user = request.user
+
+    # if user.role == "cws_manager":
+    #     # cws_code = request.data.get('cws_code', '')
+    #     cws_code=user.cws_code
+
+    #     if not cws_code:
+    #         return Response({'error': 'cws_code is required for cws_manager.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     # Get the Transactions for the specified cws_code and chosen_date
+    #     chosen_date_str = request.data.get('date', '')
+    #     chosen_date = datetime.strptime(chosen_date_str, '%Y-%m-%d').date()
+
+    #     transactions = Transactions.objects.filter(cws_code=cws_code, purchase_date=chosen_date).order_by('-id')
+    #     serializer = TransactionsSerializer(transactions, many=True)
+
+    #     return Response(serializer.data)
+    
+    # transactions = Transactions.objects.all().order_by('-purchase_date')
+    transactions = Transactions.objects.filter(is_approved=0,is_rejected=0).order_by('-id')
+    serializer = TransactionsSerializer(transactions, many=True)
+
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_rejected_transactions(request):
+    # print(request.data)
+    
+    # permission_classes = [permissions.AllowAny]
+    # user = request.user
+
+    # if user.role == "cws_manager":
+    #     # cws_code = request.data.get('cws_code', '')
+    #     cws_code=user.cws_code
+
+    #     if not cws_code:
+    #         return Response({'error': 'cws_code is required for cws_manager.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     # Get the Transactions for the specified cws_code and chosen_date
+    #     chosen_date_str = request.data.get('date', '')
+    #     chosen_date = datetime.strptime(chosen_date_str, '%Y-%m-%d').date()
+
+    #     transactions = Transactions.objects.filter(cws_code=cws_code, purchase_date=chosen_date).order_by('-id')
+    #     serializer = TransactionsSerializer(transactions, many=True)
+
+    #     return Response(serializer.data)
+    
+    # transactions = Transactions.objects.all().order_by('-purchase_date')
+    transactions = Transactions.objects.filter(is_approved=0,is_rejected=1).order_by('-id')
+    serializer = TransactionsSerializer(transactions, many=True)
+
+    return Response(serializer.data)
+
+
 
 
 @api_view(['POST'])

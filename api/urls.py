@@ -15,6 +15,7 @@ from loan.views import *
 
 urlpatterns=[
     # path('farmers/',views.FarmerListView.as_view(),name="get_farmers"),
+    path('total-cherry-purchased/', TotalCherryPurchasedView.as_view(), name='total-cherry-purchased'),
     path('farmers/',views.FarmerAndFarmListView.as_view(),name="get_farmers"),
     path('allfarmers/',views.AllFarmerListView.as_view(),name="get_farm_and_farmers"),
     path('farmers/create/',views.FarmerCreateView.as_view(),name="create_farmer"),
@@ -28,6 +29,10 @@ urlpatterns=[
     path('processtransaction/', process_transaction_data, name='process-transaction'),
     path('edittransaction/<str:pk>/',TransactionsEditAPIView.as_view(),name="edit transaction"),
     path('gettransactions/', TransactionsListView.as_view(), name='transactions-list'),
+    path('getalltransactions/', get_all_transactions, name='all-transactions-list'),
+    path('getrejectedtransactions/', get_rejected_transactions, name='get-rejeccted-transactions'),
+    path('getpendingtransactions/', get_pending_transactions, name='get-rejected-transactions'),
+
     path('getfinancialreport/', get_financial_report, name='get-financialreport'),
     path('approvetransactions/',approve_transactions,name="approve-transactions"),
     path('gettotalpurchasebydateandgrade/', total_purchase_by_date_and_grade, name='get-financialreport'),

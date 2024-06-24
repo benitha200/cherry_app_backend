@@ -24,6 +24,7 @@ class Transactions(models.Model):
     id_no=models.IntegerField(default=0,null=True)
     is_received=models.IntegerField(default=0)
     is_approved=models.IntegerField(default=0)
+    is_rejected=models.IntegerField(default=0)
     is_paid=models.IntegerField(default=0)
     status=models.IntegerField(default=0)
     plot_name=models.CharField(max_length=255,null=True)
