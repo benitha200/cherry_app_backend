@@ -45,27 +45,27 @@ class TotalCherryPurchasedView(APIView):
     def get(self, request):
         try:
             # Total weight for cherry grade containing "A" and is_approved=1
-            total_kgs_grade_A = Transactions.objects.filter(cherry_grade__icontains='A', is_approved=1).aggregate(total_kgs=Sum('cherry_kg'))['total_kgs'] or 0
+            total_kgs_grade_A = Transactions.objects.filter(cherry_grade__icontains='A').aggregate(total_kgs=Sum('cherry_kg'))['total_kgs'] or 0
 
             # Average price for cherry grade containing "A" and is_approved=1 including transport
-            avg_price_grade_A = Transactions.objects.filter(cherry_grade__icontains='A', is_approved=1).annotate(
+            avg_price_grade_A = Transactions.objects.filter(cherry_grade__icontains='A').annotate(
                 total_price_with_transport=ExpressionWrapper(
                     F('price') + F('transport'), output_field=DecimalField(max_digits=10, decimal_places=2)
                 )
             ).aggregate(avg_price=Avg('total_price_with_transport'))['avg_price'] or 0
 
             # Total weight for cherry grade containing "B" and is_approved=1
-            total_kgs_grade_B = Transactions.objects.filter(cherry_grade__icontains='B', is_approved=1).aggregate(total_kgs=Sum('cherry_kg'))['total_kgs'] or 0
+            total_kgs_grade_B = Transactions.objects.filter(cherry_grade__icontains='B').aggregate(total_kgs=Sum('cherry_kg'))['total_kgs'] or 0
 
             # Average price for cherry grade containing "B" and is_approved=1 including transport
-            avg_price_grade_B = Transactions.objects.filter(cherry_grade__icontains='B', is_approved=1).annotate(
+            avg_price_grade_B = Transactions.objects.filter(cherry_grade__icontains='B').annotate(
                 total_price_with_transport=ExpressionWrapper(
                     F('price') + F('transport'), output_field=DecimalField(max_digits=10, decimal_places=2)
                 )
             ).aggregate(avg_price=Avg('total_price_with_transport'))['avg_price'] or 0
 
             # Total value where is_approved=1
-            total_value = Transactions.objects.filter(is_approved=1).annotate(
+            total_value = Transactions.objects.annotate(
                 total_amount=ExpressionWrapper(
                     F('cherry_kg') * F('price') + F('transport') * F('cherry_kg'),
                     output_field=DecimalField(max_digits=10, decimal_places=2)
@@ -73,11 +73,11 @@ class TotalCherryPurchasedView(APIView):
             ).aggregate(total_value=Sum('total_amount'))['total_value'] or 0
 
             return Response({
-                'total_kg_grade_a': total_kgs_grade_A,
-                'avg_price_grade_a': avg_price_grade_A,
-                'total_kg_grade_b': total_kgs_grade_B,
-                'avg_price_grade_b': avg_price_grade_B,
-                'total_value': total_value,
+                'total_kg_grade_a_kgs': total_kgs_grade_A,
+                'avg_price_grade_a_rwf': avg_price_grade_A,
+                'total_kg_grade_b_kgs': total_kgs_grade_B,
+                'avg_price_grade_b_rwf': avg_price_grade_B,
+                'total_purchase_amount_rwf': total_value,
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -135,13 +135,9 @@ def process_transaction_data(request):
         formatted_month = purchase_date_obj.strftime('%m')
         formatted_day = purchase_date_obj.strftime('%d')
 
-        batch_no = f"{last_two_digits_of_year}{cws_code}{formatted_month}{formatted_day}{data['cherry_grade']}"
+        batch_no = f"{last_two_digits_of_year}{cws_code}{formatted_day}{formatted_month}{data['cherry_grade']}"
         season = datetime.now().year
         
-
-        # latest_grn_no = Transactions.objects.aggregate(Max('grn_no'))['grn_no__max']
-        # print (int(latest_grn_no))
-        # incremented_numeric_part = latest_grn_no + 1
 
         latest_grn_no = Transactions.objects.aggregate(Max('grn_no'))['grn_no__max']
 
@@ -216,7 +212,7 @@ def get_financial_report(request):
     #     return Response(serializer.data)
     
     # transactions = Transactions.objects.all().order_by('-purchase_date')
-    transactions = Transactions.objects.filter(purchase_date=chosen_date,is_approved=1).order_by('-id')
+    transactions = Transactions.objects.filter(purchase_date=chosen_date).order_by('-id')
     serializer = TransactionsSerializer(transactions, many=True)
 
     return Response(serializer.data)
@@ -364,6 +360,12 @@ def get_all_batch(request):
     serializer = BatchTransactionsSerializer(data, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def get_all_batch_all_stations(request):
+    if request.method == 'GET':
+        data = Transactions.get_total_kgs_by_batch()
+        serializer = BatchTransactionsSerializer(data, many=True)
+        return Response(serializer.data)
 
 class ReceiveHarvestListCreateView(generics.ListCreateAPIView):
     # queryset = ReceiveHarvest.objects.all()
@@ -374,15 +376,14 @@ class ReceiveHarvestListCreateView(generics.ListCreateAPIView):
         return ReceiveHarvest.objects.filter(status=0)
 
     def perform_create(self, serializer):
-        serializer.is_valid(raise_exception=True)  # Validate the serializer
-        # serializer.validated_data['location_to'] = self.request.user.cws_name
+        serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         Transactions.objects.filter(batch_no=instance.batch_no).update(is_received=1,status=1)
         
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)  # Validate the serializer
+        serializer.is_valid(raise_exception=True)  
         self.perform_create(serializer)
         return Response({"success": True, "message": "Batch Received Successfully"},status=status.HTTP_201_CREATED)
 
@@ -430,6 +431,31 @@ class CreateInventory(generics.CreateAPIView):
             {"message": "You have started the process successfully", "success": True},
             status=status.HTTP_201_CREATED
         )
+    
+class RetrieveProcessingDataAllStations(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            receive_harvest_instances = ReceiveHarvest.objects.all()
+            print(receive_harvest_instances)
+
+            combined_data = []
+            for receive_harvest_instance in receive_harvest_instances:
+                try:
+                    print(receive_harvest_instance.batch_no)
+                    inventory_instance = Inventory.objects.get(process_name=receive_harvest_instance.batch_no, status=0)
+                    serialized_data = CombinedDataSerializer(receive_harvest_instance).data
+                    print("serialized_data")
+                    print(serialized_data)
+                    serialized_data['process_type'] = inventory_instance.process_type.outputs
+                    serialized_data['schedule_date'] = inventory_instance.schedule_date
+                    combined_data.append(serialized_data)
+                except Inventory.DoesNotExist:
+                    pass  # Handle the case where no matching Inventory record is found
+
+            return Response(combined_data, status=status.HTTP_200_OK)
+
+        except ReceiveHarvest.DoesNotExist:
+            return Response({'detail': 'No Harvest in records found'}, status=status.HTTP_404_NOT_FOUND)
     
 class RetrieveProcessingData(APIView):
     def get(self, request, *args, **kwargs):
@@ -527,7 +553,7 @@ class StockInventoryOutputsItemsListView(generics.ListAPIView):
         return StockInventoryOutputs.objects.filter(process_name=process_name)
     
 class StockInventoryUpdateAPIView(APIView):
-    def post(self, request, process_name,completed_date, format=None):
+    def post(self, request, process_name,completed_date,updated_by, format=None):
         try:
             inventory = Inventory.objects.filter(process_name=process_name)
             
@@ -535,7 +561,7 @@ class StockInventoryUpdateAPIView(APIView):
                 return Response({"error": "Stock Inventory Output not found"}, status=status.HTTP_404_NOT_FOUND)
             
             # Update status for all instances
-            inventory.update(status=1,completed_date=completed_date)
+            inventory.update(status=1,completed_date=completed_date,updated_by=updated_by)
 
             return Response({"message": "Stock Inventory Outputs updated successfully"}, status=status.HTTP_200_OK)
         except Exception as e:

@@ -23,7 +23,7 @@ class BatchTransactionsSerializer(serializers.ModelSerializer):
 class InventorySerializer(serializers.ModelSerializer):
     class Meta:
         model=Inventory
-        fields=['process_name','schedule_date','process_type']
+        fields=['process_name','schedule_date','process_type','location_to','created_by']
         
 
 class CombinedDataSerializer(serializers.ModelSerializer):
@@ -31,12 +31,12 @@ class CombinedDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReceiveHarvest
-        fields = ['batch_no', 'cherry_grade', 'batch_creation_date', 'received_cherry_kg', 'location_to', 'status', 'created_at', 'inventory']
+        fields = ['batch_no', 'cherry_grade', 'batch_creation_date', 'received_cherry_kg', 'location_to', 'status', 'created_at', 'inventory','created_by']
 
 class StockInventoryOutputsSerializer(serializers.ModelSerializer):
     class Meta:
         model=StockInventoryOutputs
-        fields=['id','process_name','process_type','output_quantity','out_turn','created_at']
+        fields=['id','process_name','process_type','output_quantity','out_turn','created_at','created_by']
 
 class StockInventoryOutputsEditSerializer(serializers.ModelSerializer):
     process_type_output = serializers.ReadOnlyField(source='process_type.output')
@@ -60,7 +60,6 @@ class BatchReportSerializer(serializers.Serializer):
     schedule_date = serializers.DateField()
     completed_date=serializers.DateField()
     received_cherry_kg = serializers.DecimalField(max_digits=10, decimal_places=2)
-    # output_kg = serializers.DecimalField(max_digits=10, decimal_places=2)
     status = serializers.IntegerField()
     process_type = serializers.CharField()
     out_turn = serializers.DecimalField(10,2)

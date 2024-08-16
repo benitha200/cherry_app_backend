@@ -64,6 +64,3 @@ urlpatterns = [
     path('login/', start_authorization_flow, name='login'),
     path('callback/', callback, name='callback'),
 ]
-
-# Add this line to serve the index.html file for any other paths
-# urlpatterns += [re_path(r'^.*$', index)]

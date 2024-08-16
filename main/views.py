@@ -438,16 +438,16 @@ class LogoutView(APIView):
 #         f"code_challenge={code_challenge}&"
 #         "state=random_state_string"
 #     )
-    authorization_url = (
-        "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/authorize?"
-        "response_type=code&"
-        "client_id=927e3efe-877d-429f-9c60-6de0c86ea83b"
-        "redirect_uri=https://cherryapp.sucafina.com:8000/callback/&"
-        "scope=User.Read&"
-        "code_challenge_method=S256&"
-        f"code_challenge={code_challenge}&"
-        "state=random_state_string"
-    )
+    # authorization_url = (
+    #     "https://login.microsoftonline.com/4b030d92-7ebd-4d2f-af2c-03b8af269059/oauth2/v2.0/authorize?"
+    #     "response_type=code&"
+    #     "client_id=927e3efe-877d-429f-9c60-6de0c86ea83b"
+    #     "redirect_uri=https://cherryapp.sucafina.com:8000/callback/&"
+    #     "scope=User.Read&"
+    #     "code_challenge_method=S256&"
+    #     f"code_challenge={code_challenge}&"
+    #     "state=random_state_string"
+    # )
     
 #     return redirect(authorization_url)
 
@@ -473,7 +473,7 @@ def start_authorization_flow(request):
 
     auth_url = msal_app.get_authorization_request_url(
         scopes=['User.Read'],
-        redirect_uri='https://cherryapp.sucafina.com:8000/callback/',
+        redirect_uri='http://localhost:8000/callback/',
         code_challenge=code_challenge,
         code_challenge_method='S256',
         state='random_state_string',

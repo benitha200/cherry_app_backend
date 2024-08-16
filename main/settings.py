@@ -247,11 +247,13 @@ SECRET_KEY = 'django-insecure-%9fjwm5fs-i8z+^f=#v=v4jgk+_q!p=!a^#^yt%)bloh%8)s'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.82.27','127.0.0.1','localhost','10.100.10.43']
+ALLOWED_HOSTS = ['192.168.82.27','127.0.0.1','localhost','10.100.10.43','192.168.1.68']
 # CORS_ALLOW_ALL_ORIGINS = Tru,,e
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
     "http://localhost",
+    "http://192.168.1.68:5173",
+    "http://192.168.81.68:5173"
 ]
 ALLOWED_HOSTS=['*']
 
@@ -307,38 +309,12 @@ MIDDLEWARE = [
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "azure_signin.backends.AzureSigninBackend",
+    # "azure_signin.backends.AzureSigninBackend",
 ]
 
 LOGIN_URL = "azure_signin:login"
 LOGIN_REDIRECT_URL = "/" # Or any other endpoint
 LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.AllowAny',
-#     ],
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework_simplejwt.authentication.JWTAuthentication',
-#     ],
-# }
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'loggers': {
-#         'azure_signin': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }
 
 
 SIMPLE_JWT = {
