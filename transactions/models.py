@@ -29,6 +29,7 @@ class Transactions(models.Model):
     status=models.IntegerField(default=0)
     plot_name=models.CharField(max_length=255,null=True)
     created_at = models.DateField(auto_now_add=True)
+    created_by=models.CharField(max_length=255,default="Unknown")
 
     class Meta:
         db_table = 'transactions'
@@ -38,7 +39,7 @@ class Transactions(models.Model):
     
     @classmethod
     def get_total_kgs_by_batch(cls):
-        queryset = cls.objects.values('batch_no', 'cws_name', 'cherry_grade', 'purchase_date').annotate(total_kgs=Sum('cherry_kg')).order_by('batch_no')
+        queryset = cls.objects.filter(is_received=0, is_approved=1).values('batch_no', 'cws_name', 'cherry_grade', 'purchase_date').annotate(total_kgs=Sum('cherry_kg')).order_by('batch_no')
         return queryset
     
     @classmethod
@@ -56,6 +57,7 @@ class ReceiveHarvest(models.Model):
     location_to = models.TextField(max_length=255)
     status=models.IntegerField(default=0)
     created_at = models.DateField(auto_now_add=True)
+    created_by=models.CharField(max_length=255,default="Unknown")
 
     class Meta:
         db_table = "received_harvest"
@@ -68,6 +70,8 @@ class Inventory(models.Model):
     location_to = models.TextField(max_length=255)
     completed_date=models.DateField(null=True)
     status=models.IntegerField(default=0) 
+    created_by=models.CharField(max_length=255,default="Unknown")
+    updated_by=models.CharField(max_length=255,default="Unknown")
 
     class Meta:
         db_table="inventory"
@@ -77,8 +81,8 @@ class StockInventoryOutputs(models.Model):
     process_type = models.ForeignKey(InventoryOutput, on_delete=models.CASCADE)
     output_quantity=models.IntegerField()
     out_turn=models.CharField(max_length=200)
-    
     created_at = models.DateField(auto_now_add=True)
+    created_by=models.CharField(max_length=255,default="Unknown")
 
     class Meta:
         db_table = "stock_inventory_outputs"
@@ -94,6 +98,7 @@ class DailyPurchaseValidation(models.Model):
     cherry_grade = models.CharField(max_length=2)
     cherry_kg = models.FloatField()
     amount = models.FloatField()
+    created_by=models.CharField(max_length=255,default="Unknown")
 
     class Meta:
         db_table = 'daily_purchase_validation'
